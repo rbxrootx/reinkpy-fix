@@ -5,11 +5,15 @@ on:
   push:
     branches:
       - main
+    tags:
+      - "v*"
   pull_request:
 
 jobs:
   build-windows:
     runs-on: windows-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
@@ -32,3 +36,28 @@ jobs:
         with:
           name: ReInkPyFix-windows
           path: dist/ReInkPyFix.exe
+
+  release:
+    needs: build-windows
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download built executable
+        uses: actions/download-artifact@v4
+        with:
+          name: ReInkPyFix-windows
+          path: release-assets
+
+      - name: Create or update GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            gh release upload "$TAG_NAME" "release-assets/ReInkPyFix.exe#ReInkPyFix.exe" --clobber
+          else
+            gh release create "$TAG_NAME" "release-assets/ReInkPyFix.exe#ReInkPyFix.exe" --verify-tag --generate-notes
+          fi
