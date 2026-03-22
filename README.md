@@ -1,5 +1,9 @@
 # ReInkPy Fix
 
+[![Latest Release](https://img.shields.io/github/v/release/rbxrootx/reinkpy-fix?display_name=tag)](https://github.com/rbxrootx/reinkpy-fix/releases/latest)
+[![Build Windows EXE](https://img.shields.io/github/actions/workflow/status/rbxrootx/reinkpy-fix/build-windows-exe.yml?branch=main&label=build)](https://github.com/rbxrootx/reinkpy-fix/actions/workflows/build-windows-exe.yml)
+[![License](https://img.shields.io/github/license/rbxrootx/reinkpy-fix)](https://github.com/rbxrootx/reinkpy-fix/blob/main/LICENSE)
+
 `reinkpy-fix` is a maintained fork of the original `reinkpy` project for resetting waste ink counters on supported Epson printers.
 
 This fork focuses on the path most people actually need:
