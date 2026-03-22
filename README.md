@@ -1,77 +1,131 @@
-# reinkpy-fix
-Free and open waste ink counter resetter for some (EPSON) printers.
-# reinkpy-fix (Epson Printer Waste Counter Reset)
+# ReInkPy Fix
 
-A working fork of the `reinkpy` project by Daniel Gerber 'https://codeberg.org/atufi/reinkpy' with critical fixes implemented for resetting the Epson EcoTank waste ink counter.
+`reinkpy-fix` is a maintained fork of the original `reinkpy` project for resetting waste ink counters on supported Epson printers.
 
-**Status:** Confirmed working for Epson L3060 Series and similar.
+This fork focuses on the path most people actually need:
 
----
+- Epson printers reachable over the local network
+- A simple Windows GUI that can be packaged as a single `.exe`
+- A small CLI for advanced users
+- Fixes for SNMP write support so LAN resets can work
 
-### Problem Solved:
+This is still printer maintenance software, not magic. It does not replace pads, tanks, or other hardware.
 
-The original `reinkpy` library fails when attempting to execute the waste counter reset (`driver.reset_waste()`) via LAN/SNMP. This is because:
+## What Changed In This Fork
 
-1.  The `reinkpy/snmp.py` file **lacked the necessary SNMP SET command** logic for writing data.
-2.  The library failed to correctly pass the necessary proprietary **write community string** (`EPCF_PASS`) from the user script to the SNMP connection.
+- Fixed SNMP write support required for LAN waste-counter resets
+- Passed custom SNMP read/write community strings through the device stack
+- Added a Windows GUI entrypoint: `reinkpy_fix_gui.py`
+- Added a CLI entrypoint for scanning and resetting printers
+- Added a PyInstaller spec and build script for `ReInkPyFix.exe`
+- Cleaned up repo metadata and packaging for GitHub use
 
-**This repository fixes both issues.**
+## End-User Windows Build
 
-### 🛠️ How to Use (LAN Fix)
+The easiest path for non-technical users is the packaged Windows executable.
 
-1.  **Clone this Repository:**
-    ```bash
-    git clone https://github.com/LeFZdev/reinkpy-fix
-    cd reinkpy-fix
-    ```
-    
-2.  **Recommended Installation Path:**
-    Install this fork's dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
-    To ensure all original project dependencies (UI, USB, etc.) are available, you may also need to install the original project (ensure       you use this step BEFORE running the script, as your local fixed files will overwrite the critical ones):
-    ```bash
-    pip install -e git+https://codeberg.org/atufi/reinkpy#egg=reinkpy[ui,usb,net]
-    ```
-    
-3.  **Setup Virtual Environment** (If needed):
-    ```bash
-    python -m venv venv
-    .\venv\Scripts\activate
-    pip install -r requirements.txt
-    ```
-    
-4.  **Run the Reset Script:**
-    Modify the provided `main.py` to use the correct printer IP and the necessary values of your printer.
+### Build It
 
-    
-5.  **Execute:**
-    ```bash
-    python main.py
-    ```
-    
----
+```powershell
+python -m pip install -r requirements.txt
+powershell -ExecutionPolicy Bypass -File .\build-exe.ps1
+```
 
-### Notable Contributions (My Fixes)
+The finished executable will be written to:
 
-The following changes were implemented to enable LAN write functionality:
+`dist\ReInkPyFix.exe`
 
-* **`reinkpy/snmp.py`**: Added the missing `_set_cmd` method utilizing `pysnmp.hlapi.setCmd` to enable SNMP SET (write) operations.
-* **`reinkpy/__init__.py`**: Patched `NetworkDevice` to accept and pass the `write_user` argument from the calling script to the `SNMPLink` constructor.
-* Fixed syntax erros in **`reinkpy/__init__.py`**, and **`reinkpy/snmp.py`**, As well as changing file nominations of **`reinkpy/usbtest.py`** and **`reinkpy/netscan.py`** to prevent circular imports
-***
+### Use It
 
+1. Connect the printer and PC to the same local network.
+2. Run `ReInkPyFix.exe`.
+3. Click `Scan`, or enter the printer IP manually.
+4. Click `Connect`.
+5. If autodetection fails, choose the printer model manually.
+6. Click `Reset Waste Counter`.
 
-### Disclaimer
-This is software. It won't actually replace pads.
+Default SNMP settings are:
 
-THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+- Read community: `public`
+- Write community: `private`
 
-The author(s) and contributor(s) are not liable for any damage, data loss, or printer malfunction that may occur from its use. Use this software at your own risk.
-***
+If your printer uses different values, change them in the app before connecting.
 
-### Make sure to check out the original project !
-link: https://codeberg.org/atufi/reinkpy
+## CLI Usage
 
+Install locally:
 
+```powershell
+python -m pip install -e .[net]
+```
+
+Scan for printers:
+
+```powershell
+python -m reinkpy.main --scan
+```
+
+Show printer info:
+
+```powershell
+python -m reinkpy.main --ip 192.168.1.50 --info
+```
+
+Reset a printer:
+
+```powershell
+python -m reinkpy.main --ip 192.168.1.50 --reset
+```
+
+Force a specific model profile:
+
+```powershell
+python -m reinkpy.main --ip 192.168.1.50 --model L3060 --reset
+```
+
+## Development
+
+Install editable dependencies:
+
+```powershell
+python -m pip install -e .[net]
+```
+
+Optional extras:
+
+- `.[usb]` for USB support experiments
+- `.[ui]` for the original text UI
+
+## Publishing Your Fork
+
+If you want to publish your own GitHub fork:
+
+1. Create a new empty repository on GitHub.
+2. Point `origin` at your repo.
+3. Push this branch.
+
+Example:
+
+```powershell
+git remote rename origin upstream-fork
+git remote add origin https://github.com/YOUR-USER/reinkpy-fix.git
+git push -u origin main
+```
+
+## Safety
+
+Use this at your own risk.
+
+- Confirm the printer model before resetting.
+- Service the waste ink pads/tank as needed.
+- Power-cycle the printer after the reset if the error does not clear immediately.
+
+## License
+
+This project remains under AGPL-3.0-or-later. See [LICENSE](LICENSE).
+
+## Upstream
+
+Original project:
+
+https://codeberg.org/atufi/reinkpy

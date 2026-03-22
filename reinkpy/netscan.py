@@ -4,9 +4,6 @@ __all__ = (
     'find'
 )
 
-#Same thing here, i changed file nominations, because it was called zeroconf, causing a circular import AGAIN
-#~Fazazi
-
 import logging
 _log = logging.getLogger(__name__)
 
@@ -37,8 +34,10 @@ class Browser:
 
     def on_change(self, zeroconf: Zeroconf, service_type: str, name: str,
                   state_change: ServiceStateChange) -> None:
-        _log.info(f"Service {name} of type {service_type} changed: ${state_change.name}")
+        _log.info("Service %s of type %s changed: %s", name, service_type, state_change.name)
         info = zeroconf.get_service_info(service_type, name)
+        if info is None:
+            return
         _log.debug(f"{info}")
         d = self.by_type[service_type]
         name = info.get_name()

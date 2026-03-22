@@ -18,10 +18,6 @@ del logging, os
 
 import functools
 
-# Here, i fixed some syntax, and i added a set_cmd method
-#~Fazazi
-
-
 __doc__ = """See README."""
 
 PREFACE = """Dear User,
@@ -81,7 +77,12 @@ class Device:
     @classmethod
     def find(cls, timeout=5):
         "List available printer devices"
-        res = [d for c in cls.__subclasses__() for d in c.ifind(timeout=timeout)]
+        res = []
+        for c in cls.__subclasses__():
+            try:
+                res.extend(c.ifind(timeout=timeout))
+            except Exception:
+                _log.exception('Device discovery failed for %s', c.__name__)
         _log.info('Found %i devices', len(res))
         return res
 
@@ -90,18 +91,18 @@ class Device:
         return UsbDevice(FileIO(fname))
     @staticmethod
     def from_usb(**spec):
-        from usb import UsbIO
+        from .usbtest import UsbIO
         return UsbDevice(UsbIO.from_spec(**spec))
     @staticmethod
-    def from_ip(ip):
-        return NetworkDevice(ip)
+    def from_ip(ip, **kw):
+        return NetworkDevice(ip, **kw)
 
 
 class UsbDevice(Device):
 
     @classmethod
     def ifind(cls, **kw):
-        from usb import UsbIO
+        from .usbtest import UsbIO
         for c in (FileIO, UsbIO):
             for i in c.ifind():
                 yield cls(i)
@@ -142,6 +143,10 @@ class NetworkDevice(Device):
 
     def __init__(self, ip, **kw):
         self.ip = ip
+        self.snmp_options = {}
+        for key in ('port', 'version', 'read_user', 'write_user'):
+            if key in kw:
+                self.snmp_options[key] = kw.pop(key)
         self.__dict__.update(kw)
 
     @functools.cached_property
@@ -152,7 +157,7 @@ class NetworkDevice(Device):
     @functools.cached_property
     def snmp(self):
         from .snmp import SNMPLink
-        return SNMPLink(self.ip)
+        return SNMPLink(self.ip, **self.snmp_options)
 
     @functools.cached_property
     def epson(self):

@@ -10,10 +10,6 @@ import logging
 _log = logging.getLogger(__name__)
 del logging
 
-# Here i changed some nominations, because the file was previously named usb.py, which cause 
-# a circular import because we are trying to import the pyusb module by usb, in a file called usb.py
-# Fixed some syntax too
-# ~Fazazi
 AVAILABLE = False
 try:
     import usb

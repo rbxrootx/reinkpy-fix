@@ -33,7 +33,7 @@ class SNMPLink:
         else:
             auth = UsmUserData(self.read_user)
         engine = SnmpEngine()
-        # TMPFIX: ensure running loop
+        # pysnmp expects an event loop to exist even for synchronous helpers.
         import asyncio
         try: asyncio.get_running_loop()
         except RuntimeError: asyncio.set_event_loop(asyncio.new_event_loop())
@@ -59,7 +59,7 @@ class SNMPLink:
             
         engine = SnmpEngine()
         
-        # TMPFIX: ensure running loop (keeping the original fix)
+        # pysnmp expects an event loop to exist even for synchronous helpers.
         import asyncio
         try: asyncio.get_running_loop()
         except RuntimeError: asyncio.set_event_loop(asyncio.new_event_loop())
