@@ -55,9 +55,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG_NAME: ${{ github.ref_name }}
+          GH_REPO: ${{ github.repository }}
         run: |
-          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
-            gh release upload "$TAG_NAME" "release-assets/ReInkPyFix.exe#ReInkPyFix.exe" --clobber
+          if gh release view "$TAG_NAME" --repo "$GH_REPO" >/dev/null 2>&1; then
+            gh release upload "$TAG_NAME" "release-assets/ReInkPyFix.exe#ReInkPyFix.exe" --repo "$GH_REPO" --clobber
           else
-            gh release create "$TAG_NAME" "release-assets/ReInkPyFix.exe#ReInkPyFix.exe" --verify-tag --generate-notes
+            gh release create "$TAG_NAME" "release-assets/ReInkPyFix.exe#ReInkPyFix.exe" --repo "$GH_REPO" --verify-tag --generate-notes
           fi
